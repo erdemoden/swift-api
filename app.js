@@ -2,6 +2,7 @@ const express = require('express');
 const { request } = require('http');
 const cookieparser = require('cookie-parser');
 const app = express();
+app.listen(process.env.PORT||1998);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieparser());
@@ -12,7 +13,6 @@ app.get("/",(req,res)=>{
     res.render("index.ejs");
 });
 app.use('/',log);
-app.listen(process.env.PORT||1998);
 
 
 
