@@ -107,7 +107,7 @@ catch(e){
 res.json({hata:"Hata"});
 }
 else{
-    res.render("login.ejs",{error:"hata"});
+    res.render("login.ejs",{error:e});
 }
 }
 
