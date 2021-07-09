@@ -28,6 +28,57 @@
             margin: 0 auto;
             margin-top: 150px;
             border-style: solid black;
+            display: none;
+        }
+        .ortala{
+            display: block;
+            margin: 0 auto;
+        }
+        .nav-item{
+            margin-left: 30px;
+            float: left;
+        }
+        .navbar-nav{
+            display: block;
+            margin: 0 auto;
+            float:left;
+        }
+        #yaztext{
+            resize: none;
+            width: 50%;
+        }
+        .duzelt{
+            display: block;
+            margin:0 auto;
+            margin-bottom: 5px;
+         width: 50%;
+         display: none;
+        }
+        #pages{
+            position: fixed;
+            bottom: 0px;
+            display: none;
+            width: 30%;
+            margin-left: 35%;
+            align-items: center;
+            justify-content: center;
+            font-size: larger;
+            font-weight: bolder;
+        }
+        #ileri:hover{
+            color: gray;
+            cursor: pointer;
+        }
+        #geri:hover{
+            color: gray;
+            cursor: pointer;
+        }
+        @media screen and (max-width:992px) {
+            .nav-item{
+            margin-left: 0px;
+            float:none;
+            margin-top: 10px;
+        }
         }
     </style>
 </head>
@@ -36,21 +87,282 @@
         <p id = "hos"> Hoşgeldin, <%= gonder1.name %> </p><button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
-          <div class="collapse navbar-collapse" id="navbarNavDropdown">  <ul class="navbar-nav"><li class="nav-item"><button type="button" class="btn btn-primary">Yazılarım</button></li><li class="nav-item"><button type="button" class="btn btn-primary" id = "yaziyaz">Yazı Yaz</button></li><li class="nav-item"><button type="button" class="btn btn-primary">Tüm Yazılar</button></li><li class="nav-item"><button type="button" class="btn btn-primary">Çıkış Yap</button></li>
+          <div class="collapse navbar-collapse" id="navbarNavDropdown">  <ul class="navbar-nav"><li class="nav-item"><button type="button" class="btn btn-primary" id="yazilarim">Yazılarım</button></li><li class="nav-item"><button type="button" class="btn btn-primary" id = "yaziyaz">Yazı Yaz</button></li><li class="nav-item"><button type="button" class="btn btn-primary" id="tumyazilar">Tüm Yazılar</button></li><li class="nav-item"><button type="button" class="btn btn-primary" id="cikis">Çıkış Yap</button></li>
         </ul>
         </div>
         </nav>
-        <div id="yaziyazdiv">
-            <textarea id = yaztext rows="10" cols="50">
+        <div id="yaziyazdiv"> 
+            <div class="alert alert-success duzelt" id = "alert"role="alert">
+              </div>
+            <textarea id = "yaztext" class="ortala"  rows="10">
             </textarea>
-            <button type="button" class="btn btn-primary" id="yazgonder">Kayıt Et</button>
+            <br>
+            <button type="button" class="btn btn-primary ortala" id="yazgonder">Kayıt Et</button>
+        </div>
+        <div id="pages">
+            <p id="geri" style="margin-right:10px;"><</p>
+            <p id= "sayilar">1</p>
+            <p id="ileri" style="margin-left: 10px;">></p>
         </div>
   <script>
+      let yazilarim = document.getElementById("yazilarim");
+      let cikis = document.getElementById("cikis");
       var yaziyaz = document.getElementById("yaziyaz");
       var yaziyazdiv = document.getElementById("yaziyazdiv");
+      var gonder = document.getElementById("yazgonder");
+      var yazial = document.getElementById("yaztext");
+      var duzelt = document.getElementById("alert");
+      var pages = document.getElementById("pages");
+      var tumyazilar = document.getElementById("tumyazilar");
+      let gelentum = {};
+      let yazisayi = 3;
+      let baslangicsayi = 0;
+      let geribut = document.getElementById("geri");
+      let ileribut = document.getElementById("ileri");
+      let sayilar = document.getElementById("sayilar");
+      //YAZI YAZ BUTONU
       yaziyaz.addEventListener("click",()=>{
         yaziyazdiv.style.display = "block";
+        $('.yazilariniz').remove();
       });
+
+      // YAZI GÖNDERME BUTONU
+    gonder.addEventListener("click",()=>{
+        async function post(){
+            let data = {"yazilacak":yazial.value};
+            const response = await fetch("/yazi-yaz",{
+                method:'POST',
+                body:JSON.stringify(data),
+                headers:{
+                    "Content-type":"application/json; charset = UTF-8"
+                }
+            })
+            const data1 = await response.json();
+            if(!data1.hata){
+                duzelt.style.display = "block";
+                duzelt.innerHTML = data1.mesaj;
+                yazial.value = "";
+               console.log(data1.mesaj);
+               setTimeout(() => {
+                   duzelt.style.display = "none";
+               }, 2000);
+            }
+        }
+    post()
+});
+
+// TUM YAZILAR
+tumyazilar.addEventListener("click",()=>{
+pages.style.display = "flex";
+yaziyazdiv.style.display = "none";
+get();
+});
+
+// get tum yazılar
+async function get(){
+    const response = await fetch("/tum-yazilar");
+    gelentum = await response.json();
+    ileri(yazisayi);
+    //console.log(Object.keys(gelentum.writings).length);
+}
+
+// ileri git 
+function ileri(sayi){
+    if(sayi<=Object.keys(gelentum.writings).length){
+    if(typeof (document.getElementsByClassName("yazilariniz")[0])!='undefined' && document.getElementsByClassName("yazilariniz")[0]!=null){
+        $('.yazilariniz').remove();
+}
+    for(let i = baslangicsayi;i<sayi;i++){
+let a = document.createElement("div");
+a.className = "yazilariniz"
+let b = document.createElement("p");
+let c = document.createElement("p");
+a.style.marginTop = "30px";
+a.style.borderStyle = "solid";
+
+//c.style.overflowX = "scroll";
+c.style.overflowY = "scroll";
+b.innerHTML = gelentum.writings[i].writing;
+c.innerHTML = gelentum.writings[i].name;
+a.appendChild(b);
+a.appendChild(c);
+document.body.appendChild(a);
+}
+if(parseInt(sayilar.innerHTML)>1){
+geribut.style.display = "block";
+}
+else{
+    geribut.style.display = "none";
+}
+
+}
+if(Object.keys(gelentum.writings).length%3==0){
+    if(parseInt(sayilar.innerHTML)==Object.keys(gelentum.writings).length/3){
+    ileribut.style.display = "none";
+    geribut.style.display = "block"
+}
+}
+if(Object.keys(gelentum.writings).length!=0){
+    if(parseInt(sayilar.innerHTML)==(Object.keys(gelentum.writings).length/3)+(Object.keys(gelentum.writings)%3)){
+    ileribut.style.display = "none";
+    geribut.style.display = "block";
+}
+}
+
+}
+// ileri buton tıklama
+ileribut.addEventListener("click",()=>{
+if(baslangicsayi==0){
+    baslangicsayi = 3;
+    if(yazisayi+3<=Object.keys(gelentum.writings).length){
+        yazisayi+=3;
+    }
+    else if(yazisayi+2<=Object.keys(gelentum.writings).length){
+        yazisayi+=2;
+        ileribut.style.display = "none";
+    }
+    else if(yazisayi+1<=Object.keys(gelentum.writings).length){
+        yazisayi+=1;
+        ileribut.style.display = "none";
+    }
+    console.log(yazisayi+"3.1");
+}
+ else if(baslangicsayi+3<=Object.keys(gelentum.writings).length){
+    baslangicsayi = baslangicsayi+3;
+    if(yazisayi+3<=Object.keys(gelentum.writings).length){
+        yazisayi+=3;
+    }
+    else if(yazisayi+2<=Object.keys(gelentum.writings).length){
+        yazisayi+=2;
+        ileribut.style.display = "none";
+    }
+    else if(yazisayi+1<=Object.keys(gelentum.writings).length){
+        yazisayi+=1;
+        ileribut.style.display = "none";
+    }
+    console.log(yazisayi+"3.2");
+}
+ else if(baslangicsayi+2<=Object.keys(gelentum.writings).length && baslangicsayi+3>Object.keys(gelentum.writings).length){
+    baslangicsayi = baslangicsayi+2;
+    if(yazisayi+3<=Object.keys(gelentum.writings).length){
+        yazisayi+=3;
+    }
+    else if(yazisayi+2<=Object.keys(gelentum.writings).length){
+        yazisayi+=2;
+        ileribut.style.display = "none";
+    }
+    else if(yazisayi+1<=Object.keys(gelentum.writings).length){
+        yazisayi+=1;
+        ileribut.style.display = "none";
+    }
+    console.log(yazisayi +"2");
+}
+ else if(baslangicsayi+1<=Object.keys(gelentum.writings).length && baslangicsayi+3>Object.keys(gelentum.writings).length){
+    baslangicsayi = baslangicsayi+1;
+    yazisayi+=1;
+    console.log(yazisayi+"1");
+}
+else{
+    ileribut.style.display = "none";
+}
+sayilar.innerHTML = parseInt(sayilar.innerHTML)+1;
+ileri(yazisayi);
+});
+
+
+// geri buton tıklama
+geribut.addEventListener("click",()=>{
+    ileribut.style.display = "block";
+if(document.getElementsByClassName("yazilariniz").length==1){
+    yazisayi-=1;
+    baslangicsayi = baslangicsayi-3;
+}
+else if(document.getElementsByClassName("yazilariniz").length==2){
+    yazisayi-=2;
+    baslangicsayi = baslangicsayi-3;
+}
+else if(document.getElementsByClassName("yazilariniz").length==3){
+    yazisayi-=3;
+    baslangicsayi = baslangicsayi-3;
+}
+else{
+    geribut.style.display = "none";
+}
+
+sayilar.innerHTML = parseInt(sayilar.innerHTML)-1;
+geri(yazisayi);
+});
+
+// geri git function
+function geri(sayi){
+    if(sayi<=Object.keys(gelentum.writings).length){
+        if(typeof (document.getElementsByClassName("yazilariniz")[0])!='undefined' && document.getElementsByClassName("yazilariniz")[0]!=null){
+        $('.yazilariniz').remove();
+}
+    for(let i = baslangicsayi;i<sayi;i++){
+let a = document.createElement("div");
+a.className = "yazilariniz";
+let b = document.createElement("p");
+let c = document.createElement("p");
+a.style.marginTop = "30px";
+a.style.borderStyle = "solid";
+
+//c.style.overflowX = "scroll";
+c.style.overflowY = "scroll";
+b.innerHTML = gelentum.writings[i].writing;
+c.innerHTML = gelentum.writings[i].name;
+a.appendChild(b);
+a.appendChild(c);
+document.body.appendChild(a);
+}
+}
+if(parseInt(sayilar.innerHTML)==1){
+    geribut.style.display = "none";
+    ileribut.style.display = "block";
+}
+else{
+    geribut.style.display = "block";
+}
+}
+
+// ÇIKIŞ BUTONU
+cikis.addEventListener("click",async()=>{
+yaziyazdiv.style.display = "none";
+$('.yazilariniz').remove();
+const response = await fetch("/cikis");
+console.log(response);
+location.reload();
+});
+
+
+// YAZILARIM BUTONU
+yazilarim.addEventListener("click",async()=>{
+    const response = await fetch("/yazilarim-web");
+    gelentum = await response.json();
+
+for(let i = 0;i<gelentum[0].writings.length;i++){
+    let a = document.createElement("div");
+a.className = "yazilariniz";
+a.id = i;
+let b = document.createElement("p");
+let c = document.createElement("p");
+let d = document.createElement("BUTTON");
+d.className = "btn btn-danger yazisil";
+d.style.width = "100px";
+d.style.height = "30px";
+d.innerHTML = "YAZIYI SİL";
+a.style.marginTop = "30px";
+a.style.borderStyle = "solid";
+c.style.overflowY = "scroll";
+b.innerHTML = gelentum[0].writings[i];
+c.innerHTML = gelentum[0].name;
+a.appendChild(b);
+a.appendChild(c);
+a.appendChild(d);
+document.body.appendChild(a);
+}
+
+});
   </script>
 </body>
 </html>

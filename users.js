@@ -11,7 +11,8 @@ name:{
 password:{
     type:String,
     required:[true,'`{PATH}` alanı zorunludur']
-}
+},
+writings:[String]
 });
 users.pre('save',async function(next){
     user = this;

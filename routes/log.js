@@ -164,5 +164,74 @@ router.get("/deneme/:id",(req,res)=>{
 res.send("Merhaba Girdiğiniz Değer : "+req.params.id);
 });
 
+// yazi-yaz YAZI KAYIT ETMEK İÇİN (İOS İÇİN YAPILACAK)
+router.post("/yazi-yaz",async(req,res)=>{
+let ad = req.cookies.jwt;
+if(!req.body.type){
+    if(ad){
+        let name1 = jwt.verify(ad, process.env.TOKEN_SECRET);
+        console.log(name1.name);
+        try{
+        await User.update({name:name1.name},{$push:{writings:req.body.yazilacak}})
+        res.json({"mesaj":"YAZINIZ BAŞARIYLA KAYIT EDİLDİ"});
+    }
+    catch{
+        res.json({"hata":"hata oluştu"});
+    }
+    }
+}
+});
+
+//TUM YAZILARI GÖSTERME 
+router.get("/tum-yazilar",async(req,res)=>{
+    let ad = req.cookies.jwt;
+    let olustur = {
+        writings:[{}]
+    };
+  try{
+      await User.find({},{writings:1,name:1},(err,data)=>{
+        for(let i=0;i<data.length;i++){
+            if(data[i].writings.length!=0){
+                for(let j =0;j<data[i].writings.length;j++){
+                    olustur.writings[j] = {name:data[i].name,writing:data[i].writings[j]};
+                }
+            }
+            else{
+                continue;
+            }
+        }
+        res.json(olustur);
+      });
+  }
+  catch{
+      res.json({hata:"hata"});
+  }
+});
+
+// ÇIKIŞ YAPMA 
+
+router.get("/cikis",(req,res)=>{
+    res.clearCookie('jwt');
+    res.send('cookie jwt cleared');
+});
+
+// YAZILARIM WEB 
+router.get("/yazilarim-web",async(req,res)=>{
+    let ad = jwt.verify(req.cookies.jwt,process.env.TOKEN_SECRET);
+    try{
+     const user = await User.find({name:ad.name},{writings:1,name:1})
+     if(user.length!=0){
+         res.json(user);
+     }
+     else{
+         res.json({"hata":"hiç yazınız bulunmamaktadır"});
+     }
+}
+catch{
+    res.json({"hata":"bir hata ile karşılaştık"});
+}
+});
+
+
 
 module.exports = router;
